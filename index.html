@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FetchBot · Autonomous Mobile Manipulation</title>
+  <meta name="description" content="A TurtleBot3 with an SO-101 arm that finds an object on the floor, picks it up, and brings it back. EECS C106A Fall 2026 final project.">
+  <meta property="og:title" content="FetchBot · Autonomous Mobile Manipulation">
+  <meta property="og:description" content="A TurtleBot3 + SO-101 arm that detects, retrieves and delivers objects. EECS C106A Fall 2026.">
+  <meta property="og:image" content="assets/img/robot-hero.svg">
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script>
+    // Hide the headline + robot before first paint when the intro will play (first visit per tab).
+    // Fallback: reveal everything after 5 s even if hero-robot.js never runs.
+    try {
+      if (!matchMedia("(prefers-reduced-motion: reduce)").matches && !sessionStorage.getItem("fetchbot-intro")) {
+        document.documentElement.classList.add("intro-pending");
+        window.__introFallback = setTimeout(function () { document.documentElement.classList.remove("intro-pending"); }, 5000);
+      }
+    } catch (e) {}
+  </script>
+</head>
+<body id="top">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header id="site-nav"></header>
+
+  <main id="main">
+    <!-- ================= HERO ================= -->
+    <section class="hero">
+      <div class="hero-bg" aria-hidden="true"><div class="hero-grid"></div><div class="hero-glow"></div></div>
+      <div class="container hero-inner">
+        <div>
+          <span class="eyebrow">EECS C106A / 206A · Fall 2026</span>
+          <h1><span class="hl-line">See it.</span><br><span class="hl-line">Grab it.</span><br><span class="hl-line accent">Bring it back.</span></h1>
+          <p class="lede">A TurtleBot3 with a LeRobot SO-101 arm that spots an object on the floor, drives over, picks it up and hands it back to you. No human in the loop.</p>
+          <div class="btn-row">
+            <a class="btn btn-primary" href="#demo">▶ Watch the demo</a>
+            <a class="btn btn-ghost" data-site="repo" href="#">GitHub</a>
+            <a class="btn btn-ghost" href="materials.html#presentation">Slides</a>
+          </div>
+          <div class="hero-meta">
+            <span>ROS 2</span><span>Nav2</span><span>MoveIt 2</span><span>Object detection</span><span>LiDAR + odometry</span>
+          </div>
+        </div>
+        <div class="hero-art" id="hero-robot">
+          <img src="assets/img/robot-hero.svg" alt="Line drawing of a TurtleBot3 with a robotic arm reaching down to grasp a cube that a camera has detected">
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= PIPELINE ================= -->
+    <section>
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">How it works</span>
+          <h2>One button. Five stages.</h2>
+          <p>Each stage is its own ROS 2 component. A central mission node sequences them and recovers when one fails.</p>
+        </div>
+        <div class="pipeline reveal">
+          <div class="pipe-step"><h4>Search</h4><p>Scan the room with the onboard camera.</p></div>
+          <div class="pipe-step"><h4>Detect</h4><p>Find the target and project it onto the floor map.</p></div>
+          <div class="pipe-step"><h4>Navigate</h4><p>Nav2 plans a collision-free path to a grasp pose.</p></div>
+          <div class="pipe-step"><h4>Grasp</h4><p>MoveIt solves IK and the SO-101 picks the object up.</p></div>
+          <div class="pipe-step"><h4>Deliver</h4><p>Drive to the person and place the object down.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= DEMO ================= -->
+    <section id="demo">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Demo</span>
+          <h2>Watch a full run</h2>
+        </div>
+        <div class="reveal" data-media="demoMain"></div>
+      </div>
+    </section>
+
+    <!-- ================= STATS ================= -->
+    <section class="section-tight">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">By the numbers</span>
+          <h2>Results at a glance <span class="sample-badge" id="home-stats-sample" hidden>SAMPLE DATA</span></h2>
+          <p>Computed live from our trial log (<code>assets/js/trials.js</code>). See <a href="results.html">Results</a> for every run.</p>
+        </div>
+        <div class="stats reveal" id="home-stats">
+          <div class="stat"><div class="stat-value"><span data-stat="success">0</span><small>%</small></div><div class="stat-label">End-to-end success</div></div>
+          <div class="stat"><div class="stat-value"><span data-stat="trials">0</span></div><div class="stat-label">Logged trials</div></div>
+          <div class="stat"><div class="stat-value"><span data-stat="grasp">0</span><small>%</small></div><div class="stat-label">Grasp success after arrival</div></div>
+          <div class="stat"><div class="stat-value"><span data-stat="time">0</span><small>s</small></div><div class="stat-label">Avg. time to deliver</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= ABSTRACT ================= -->
+    <section>
+      <div class="container split">
+        <div class="reveal">
+          <span class="eyebrow">Abstract</span>
+          <h2>Mobile manipulation on a student budget</h2>
+        </div>
+        <div class="reveal">
+          <p>This project develops an autonomous mobile manipulation system by integrating a <strong>LeRobot SO-101</strong> robotic arm with a <strong>TurtleBot3</strong>. Using an onboard camera and computer vision, the robot detects a target object on the floor and estimates its location. The TurtleBot then autonomously navigates to a suitable grasping position, uses the arm to retrieve the object, and transports it to a designated delivery location.</p>
+          <p>The system combines object detection, localization, motion planning and robotic manipulation using <strong>ROS 2</strong>. We evaluate its performance across different starting positions and object placements, initially focusing on lightweight, visually distinctive objects.</p>
+          <p class="muted">Reach goals: autonomous object search and a wider variety of everyday objects.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SENSE / PLAN / ACT ================= -->
+    <section>
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Sense · Plan · Act</span>
+          <h2>The full robotics loop</h2>
+        </div>
+        <div class="grid-3">
+          <div class="card reveal">
+            <div class="card-icon">S</div>
+            <h3>Sensing</h3>
+            <p>The camera detects and locates objects. LiDAR and wheel odometry localize the robot on a map.</p>
+          </div>
+          <div class="card reveal">
+            <div class="card-icon">P</div>
+            <h3>Planning</h3>
+            <p>The robot picks an approach pose, plans a collision-free route with Nav2, and computes arm motions with MoveIt.</p>
+          </div>
+          <div class="card reveal">
+            <div class="card-icon">A</div>
+            <h3>Actuation</h3>
+            <p>The TurtleBot drives to the target while the SO-101 arm and gripper do the pick and the place.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= EXPLORE ================= -->
+    <section>
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Explore the project</span>
+          <h2>Go deeper</h2>
+        </div>
+        <div class="grid-3">
+          <a class="card card-link reveal" href="design.html"><span class="eyebrow">02</span><h3>Design</h3><p>Requirements, architecture, state machine and the trade-offs we made.</p><span class="arrow">Read →</span></a>
+          <a class="card card-link reveal" href="implementation.html"><span class="eyebrow">03</span><h3>Implementation</h3><p>Hardware, perception math, Nav2, MoveIt, and interactive IK and camera demos.</p><span class="arrow">Read →</span></a>
+          <a class="card card-link reveal" href="results.html"><span class="eyebrow">04</span><h3>Results</h3><p>Every trial on a map, success rates by stage, and the failure reel.</p><span class="arrow">Read →</span></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TEAM ================= -->
+    <section>
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Team</span>
+          <h2>Built by four people</h2>
+        </div>
+        <div class="team-mini reveal">
+          <a href="team.html#abel"><span class="avatar">AC</span><span>Abel Cisneros</span></a>
+          <a href="team.html#chase"><span class="avatar">CB</span><span>Charles (Chase) Ballentine</span></a>
+          <a href="team.html#gloria"><span class="avatar">GL</span><span>Gloria Li</span></a>
+          <a href="team.html#corey"><span class="avatar">CW</span><span>Corey Won</span></a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="site-footer"></footer>
+  <script src="assets/js/media.js"></script>
+  <script src="assets/js/trials.js"></script>
+  <script src="assets/js/site.js"></script>
+  <script src="assets/js/kinematics.js"></script>
+  <script src="assets/js/hero-robot.js"></script>
+</body>
+</html>

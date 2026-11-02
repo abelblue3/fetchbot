@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Build Log · FetchBot</title>
+  <meta name="description" content="A dated timeline of FetchBot's development milestones.">
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body id="top">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header id="site-nav"></header>
+
+  <main id="main">
+    <header class="page-hero">
+      <div class="container">
+        <span class="page-num" aria-hidden="true">07</span>
+        <span class="eyebrow">07 · Build log</span>
+        <h1>Build log</h1>
+        <p class="lede">How the project came together, milestone by milestone. Dates come from our proposal and get updated as we go.</p>
+      </div>
+    </header>
+
+    <section>
+      <div class="container narrow">
+        <div class="progress reveal" id="log-progress">
+          <div class="progress-track"><div class="progress-done"></div><div class="progress-doing"></div></div>
+          <div class="progress-meta"></div>
+        </div>
+
+        <!--
+          HOW TO ADD / UPDATE AN ENTRY
+          data-status = "done" | "in-progress" | "planned"   (the chip and progress bar update automatically)
+          Copy one <li class="log-entry"> block, change the date/title/text, add a photo or video slot if you have one.
+        -->
+        <ol class="timeline">
+          <li class="log-entry reveal" data-status="planned">
+            <div class="log-date"><time datetime="2026-10-25">Oct 25</time><span class="chip" data-status-chip></span><span>Build arm · 1a</span></div>
+            <h3>Order &amp; print parts for the baseline arm</h3>
+            <p>Get the SO-101 working on its own before anything else. The hardware is an unknown quantity, and having it in hand will reveal more tasks. <span class="todo">owner · what actually happened</span></p>
+            <div class="placeholder" data-todo="Photo: assembled SO-101 on the bench"></div>
+          </li>
+          <li class="log-entry reveal" data-status="planned">
+            <div class="log-date"><time datetime="2026-11-02">Nov 2</time><span class="chip" data-status-chip></span><span>Build arm · 1b</span></div>
+            <h3>Modify the arm to attach to the TurtleBot</h3>
+            <p>Design and print adapter pieces. Verify function and range of motion with the default LeRobot software. <span class="todo">owner · notes</span></p>
+            <div class="placeholder" data-todo="Render of mount v1 in CAD"></div>
+          </li>
+          <li class="log-entry reveal" data-status="planned">
+            <div class="log-date"><time datetime="2026-11-09">Nov 9</time><span class="chip" data-status-chip></span><span>Build arm · 1c</span></div>
+            <h3>Test the attachment</h3>
+            <p>Check clearances and that the LiDAR still works with the arm mounted. Expect this to take longer than planned. <span class="todo">owner · notes</span></p>
+          </li>
+          <li class="log-entry reveal" data-status="planned">
+            <div class="log-date"><time datetime="2026-11-09">Nov 9</time><span class="chip" data-status-chip></span><span>Software · 2a</span></div>
+            <h3>Pose estimation node</h3>
+            <p>Evaluate an open-vocabulary detector, a YOLO-type detector and a VLM. Wrap the winner in a ROS node, calibrate the camera, and measure 3D localization accuracy in the lab. <span class="todo">owner · notes</span></p>
+          </li>
+          <li class="log-entry reveal" data-status="planned">
+            <div class="log-date"><time datetime="2026-11-09">Nov 9</time><span class="chip" data-status-chip></span><span>Software · 2b</span></div>
+            <h3>Configure MoveIt for the SO-101</h3>
+            <p>URDF + MoveIt Setup Assistant config files. Testable on any computer in simulation. <span class="todo">owner · notes</span></p>
+          </li>
+          <li class="log-entry reveal" data-status="planned">
+            <div class="log-date"><time datetime="2026-11-21">Nov 21</time><span class="chip" data-status-chip></span><span>Software · 2c</span></div>
+            <h3>Trajectory planner with Nav2</h3>
+            <p>Plan a route to the object's approach pose once it's localized. Needs testing on the lab robots. <span class="todo">owner · notes</span></p>
+          </li>
+          <li class="log-entry reveal" data-status="planned">
+            <div class="log-date"><span>TBD</span><span class="chip" data-status-chip></span><span>Testing · 3</span></div>
+            <h3>Integration &amp; end-to-end trials</h3>
+            <p>Combine the separately tested arm and perception into the final stack and run trials from varied start positions. <span class="todo">owner · notes</span></p>
+          </li>
+          <li class="log-entry reveal" data-status="planned">
+            <div class="log-date"><time datetime="2026-12-18">Dec 18</time><span class="chip" data-status-chip></span><span>Report · 4</span></div>
+            <h3>Final website &amp; videos</h3>
+            <p>This site, with videos of the system working.</p>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="section-tight"><div class="container"><nav id="pager" aria-label="Page navigation"></nav></div></section>
+  </main>
+
+  <footer id="site-footer"></footer>
+  <script src="assets/js/media.js"></script>
+  <script src="assets/js/site.js"></script>
+</body>
+</html>

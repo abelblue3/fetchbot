@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Team · FetchBot</title>
+  <meta name="description" content="The four people who built FetchBot and who did what.">
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body id="top">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header id="site-nav"></header>
+
+  <main id="main">
+    <header class="page-hero">
+      <div class="container">
+        <span class="page-num" aria-hidden="true">06</span>
+        <span class="eyebrow">06 · Team</span>
+        <h1>Team</h1>
+        <p class="lede">Two undergrads and two grad students across EECS and ME.</p>
+      </div>
+    </header>
+
+    <section>
+      <div class="container">
+        <div class="placeholder ratio-16x9 reveal" data-todo="Group photo with the robot" style="margin-bottom:48px"></div>
+        <!-- To use a photo: replace the initials inside .avatar with <img src="assets/img/team/abel.jpg" alt="Abel Cisneros"> -->
+        <div class="grid-2">
+          <article class="card team-card reveal" id="abel">
+            <div class="avatar">AC</div>
+            <div><h3>Abel Cisneros</h3><span class="role"><span class="todo">role</span> · 4th-year EECS</span></div>
+            <p>Abel is a 4th-year EECS student with experience in software engineering. Abel loves to exploit food apps and play video games, and is currently exploring the hardware side of computers.</p>
+            <ul><li><span class="todo">contribution</span></li><li><span class="todo">contribution</span></li></ul>
+            <a class="contact" href="mailto:acisneros0030@berkeley.edu">acisneros0030@berkeley.edu</a>
+          </article>
+          <article class="card team-card reveal" id="chase">
+            <div class="avatar">CB</div>
+            <div><h3>Charles (Chase) Ballentine</h3><span class="role"><span class="todo">role</span> · EECS graduate student</span></div>
+            <p>Chase is an EECS graduate student with a few years of industry experience in UAS autonomy, interested in learning approaches to robotics, particularly hierarchical VLA models. Chase provided the SO-101 arm.</p>
+            <ul><li><span class="todo">contribution</span></li><li><span class="todo">contribution</span></li></ul>
+            <a class="contact" href="mailto:charles_ballentine@berkeley.edu">charles_ballentine@berkeley.edu</a>
+          </article>
+          <article class="card team-card reveal" id="gloria">
+            <div class="avatar">GL</div>
+            <div><h3>Gloria Li</h3><span class="role"><span class="todo">role</span> · 4th-year CS</span></div>
+            <p>Gloria is a 4th-year computer science student. Most of Gloria's experience is on the software side, and Gloria is currently very interested in, and learning about, robotics.</p>
+            <ul><li><span class="todo">contribution</span></li><li><span class="todo">contribution</span></li></ul>
+            <a class="contact" href="mailto:gloria.li@berkeley.edu">gloria.li@berkeley.edu</a>
+          </article>
+          <article class="card team-card reveal" id="corey">
+            <div class="avatar">CW</div>
+            <div><h3>Corey Won</h3><span class="role"><span class="todo">role</span> · ME graduate student</span></div>
+            <p>Corey is an ME graduate student who runs a small business selling electromechanical products, with experience in CAD, PCB design and 3D printing, and a particular interest in robotics and autonomous systems.</p>
+            <ul><li><span class="todo">contribution</span></li><li><span class="todo">contribution</span></li></ul>
+            <a class="contact" href="mailto:corey_won@berkeley.edu">corey_won@berkeley.edu</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= CONTRIBUTION MATRIX ================= -->
+    <section id="contributions">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Who did what</span>
+          <h2>Contributions</h2>
+          <p><span class="lead" style="color:var(--accent)">●</span> lead &nbsp; <span style="color:var(--text-2)">○</span> contributed. <span class="todo">Fill in each cell as ● / ○ / –</span></p>
+        </div>
+        <div class="table-wrap reveal">
+          <table class="matrix">
+            <thead><tr><th>Area</th><th>Abel</th><th>Chase</th><th>Gloria</th><th>Corey</th></tr></thead>
+            <tbody>
+              <tr><td>Arm build &amp; mount CAD</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+              <tr><td>Perception &amp; calibration</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+              <tr><td>Navigation (Nav2, mapping)</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+              <tr><td>MoveIt &amp; arm control</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+              <tr><td>Mission FSM &amp; integration</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+              <tr><td>Testing &amp; data collection</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+              <tr><td>Website, video &amp; slides</td><td>–</td><td>–</td><td>–</td><td>–</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout reveal" style="margin-top:40px">
+          <h4>Acknowledgments</h4>
+          <p>Thanks to the EECS C106A course staff and lab TAs. <span class="todo">Name anyone who helped</span></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-tight"><div class="container"><nav id="pager" aria-label="Page navigation"></nav></div></section>
+  </main>
+
+  <footer id="site-footer"></footer>
+  <script src="assets/js/media.js"></script>
+  <script src="assets/js/site.js"></script>
+</body>
+</html>

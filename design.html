@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Design · FetchBot</title>
+  <meta name="description" content="Design goals, requirements, system architecture, mission state machine and trade-offs for FetchBot.">
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body id="top" data-math>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header id="site-nav"></header>
+
+  <main id="main">
+    <header class="page-hero">
+      <div class="container">
+        <span class="page-num" aria-hidden="true">02</span>
+        <span class="eyebrow">02 · Design</span>
+        <h1>Design</h1>
+        <p class="lede">What the robot has to do, how the pieces fit together, and the trade-offs we made along the way.</p>
+        <nav class="toc" aria-label="On this page">
+          <a href="#goals">Goals</a><a href="#requirements">Requirements</a><a href="#architecture">Architecture</a>
+          <a href="#state-machine">State machine</a><a href="#tradeoffs">Trade-offs</a><a href="#hard">Why it's hard</a>
+        </nav>
+      </div>
+    </header>
+
+    <!-- ================= GOALS ================= -->
+    <section id="goals">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Goals</span>
+          <h2>What success looks like</h2>
+          <p>Our primary goal is an autonomous mobile manipulation system that can identify, retrieve and deliver objects with minimal human intervention, even when the robot and object start in different positions.</p>
+        </div>
+        <div class="grid-2">
+          <div class="card reveal">
+            <span class="eyebrow">Realistic goal</span>
+            <h3>Reliably retrieve one object type</h3>
+            <p>Detect, navigate to, pick up and deliver a single lightweight, visually distinctive object from varied starting positions.</p>
+          </div>
+          <div class="card reveal">
+            <span class="eyebrow">Reach goals</span>
+            <h3>Search and generalize</h3>
+            <p>Search the room autonomously when the object isn't in view, and retrieve several kinds of everyday objects.</p>
+          </div>
+        </div>
+
+        <div class="subsection reveal">
+          <h3>Success criteria</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Criterion</th><th>Target</th><th>How we measure it</th></tr></thead>
+              <tbody>
+                <tr><td>End-to-end task completion</td><td><span class="todo">e.g. ≥ 70% over 20 trials</span></td><td>A trial succeeds when the object ends up inside the delivery zone with no human touch.</td></tr>
+                <tr><td>Grasp success after arrival</td><td><span class="todo">target %</span></td><td>Grasps that lift the object ÷ runs where navigation reached the grasp pose.</td></tr>
+                <tr><td>Object localization error</td><td><span class="todo">e.g. &lt; 3 cm</span></td><td>Estimated floor position vs. a tape-measured ground truth.</td></tr>
+                <tr><td>Starting-pose variety</td><td><span class="todo">N distinct poses</span></td><td>Robot and object positions spread across the test area (see the results map).</td></tr>
+                <tr><td>Time per run</td><td><span class="todo">e.g. &lt; 90 s</span></td><td>From "start" to object released in the delivery zone.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= REQUIREMENTS ================= -->
+    <section id="requirements">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Requirements</span>
+          <h2>Requirements &amp; constraints</h2>
+        </div>
+        <div class="grid-2">
+          <div class="card reveal">
+            <h3>Functional</h3>
+            <ul>
+              <li>Detect the target object in the onboard camera feed.</li>
+              <li>Estimate its position on the floor in the map frame.</li>
+              <li>Plan and drive a collision-free path to a pose where the object is within arm reach.</li>
+              <li>Grasp, lift and hold the object while driving.</li>
+              <li>Drive to the delivery location and place the object down.</li>
+              <li>Recover from failures (lost detection, missed grasp) without a restart.</li>
+            </ul>
+          </div>
+          <div class="card reveal">
+            <h3>Constraints</h3>
+            <ul>
+              <li><strong>Lab time is scarce:</strong> software must be hardware-agnostic enough to develop and test away from the lab.</li>
+              <li><strong>Payload and stability:</strong> the arm adds mass far from the wheelbase (see <a href="#hard">tip-over</a>).</li>
+              <li><strong>Sensor clearance:</strong> the arm and mount must not block the LiDAR or the camera.</li>
+              <li><strong>Power:</strong> the arm may need its own supply while the TurtleBot drives.</li>
+              <li><strong>Removable mount:</strong> the TurtleBot is a lab robot and has to go back to stock.</li>
+              <li><span class="todo">Add constraints we discover</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= ARCHITECTURE ================= -->
+    <section id="architecture">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Architecture</span>
+          <h2>System architecture</h2>
+          <p>Proposed ROS 2 node graph. Sensors are cyan, our nodes are lime, hardware is grey. <span class="todo">Update node and topic names to match the final code</span></p>
+        </div>
+        <figure class="diagram reveal">
+          <svg viewBox="0 0 1000 460" role="img" aria-label="ROS 2 architecture: camera feeds the perception node, which publishes the target pose to the mission state machine. The mission node sends NavigateToPose goals to Nav2, which drives the TurtleBot base, and MoveGroup goals to MoveIt, which drives the SO-101 arm.">
+            <defs>
+              <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#8790a0"/></marker>
+            </defs>
+            <g font-size="11" fill="#8790a0">
+              <!-- edges -->
+              <g stroke="#8790a0" stroke-width="1.5" fill="none" marker-end="url(#arr)">
+                <path d="M170 58 H246"/>
+                <path d="M460 58 H640 V146"/>
+                <path d="M190 198 H246"/>
+                <path d="M190 278 H222 V222 H246"/>
+                <path d="M355 239 V296"/>
+                <path d="M540 215 H500 V336 H464" marker-start="url(#arr)"/>
+                <path d="M355 372 V408 H536"/>
+                <path d="M740 192 H808" marker-start="url(#arr)"/>
+                <path d="M900 234 V266"/>
+                <path d="M900 326 V376"/>
+              </g>
+              <text x="176" y="50">/image_raw</text>
+              <text x="500" y="50">/target_pose</text>
+              <text x="200" y="190">/scan</text>
+              <text x="200" y="300">/odom</text>
+              <text x="362" y="272">map→odom TF</text>
+              <text x="506" y="300">NavigateToPose</text>
+              <text x="506" y="314">(action)</text>
+              <text x="380" y="400">/cmd_vel</text>
+              <text x="746" y="182" font-size="10">MoveGroup</text>
+              <text x="894" y="254" text-anchor="end">/joint_trajectory</text>
+              <text x="894" y="356" text-anchor="end">serial bus</text>
+            </g>
+            <!-- sensor boxes -->
+            <g font-size="14" font-weight="700">
+              <g><rect x="20" y="30" width="150" height="56" rx="10" fill="#0f1a1f" stroke="#3ad6ff" stroke-width="1.5"/><text x="36" y="54" fill="#eef0f4">Camera</text><text x="36" y="72" fill="#8790a0" font-size="11" font-weight="400">Logitech C922</text></g>
+              <g><rect x="20" y="170" width="170" height="56" rx="10" fill="#0f1a1f" stroke="#3ad6ff" stroke-width="1.5"/><text x="36" y="194" fill="#eef0f4">LiDAR</text><text x="36" y="212" fill="#8790a0" font-size="11" font-weight="400">360° LDS</text></g>
+              <g><rect x="20" y="250" width="170" height="56" rx="10" fill="#0f1a1f" stroke="#3ad6ff" stroke-width="1.5"/><text x="36" y="274" fill="#eef0f4">Odometry</text><text x="36" y="292" fill="#8790a0" font-size="11" font-weight="400">wheel encoders + IMU</text></g>
+            </g>
+            <!-- our nodes -->
+            <g font-size="14" font-weight="700">
+              <g><rect x="250" y="22" width="210" height="72" rx="10" fill="#161c0c" stroke="#c8ff2e" stroke-width="1.5"/><text x="266" y="48" fill="#eef0f4">perception_node</text><text x="266" y="66" fill="#8790a0" font-size="11" font-weight="400">detect → pixel → floor</text><text x="266" y="82" fill="#8790a0" font-size="11" font-weight="400">→ map frame</text></g>
+              <g><rect x="540" y="150" width="200" height="84" rx="10" fill="#161c0c" stroke="#c8ff2e" stroke-width="2.5"/><text x="556" y="178" fill="#c8ff2e">mission_fsm</text><text x="556" y="198" fill="#8790a0" font-size="11" font-weight="400">sequences every stage,</text><text x="556" y="214" fill="#8790a0" font-size="11" font-weight="400">handles retries</text></g>
+            </g>
+            <!-- framework nodes -->
+            <g font-size="14" font-weight="700">
+              <g><rect x="250" y="175" width="210" height="64" rx="10" fill="#14171e" stroke="#353c4a" stroke-width="1.5"/><text x="266" y="201" fill="#eef0f4">AMCL + map_server</text><text x="266" y="219" fill="#8790a0" font-size="11" font-weight="400">localization on a saved map</text></g>
+              <g><rect x="250" y="300" width="210" height="72" rx="10" fill="#14171e" stroke="#353c4a" stroke-width="1.5"/><text x="266" y="326" fill="#eef0f4">Nav2</text><text x="266" y="344" fill="#8790a0" font-size="11" font-weight="400">global planner + controller</text><text x="266" y="360" fill="#8790a0" font-size="11" font-weight="400">costmaps from /scan</text></g>
+              <g><rect x="812" y="150" width="176" height="84" rx="10" fill="#14171e" stroke="#353c4a" stroke-width="1.5"/><text x="828" y="178" fill="#eef0f4">MoveIt 2</text><text x="828" y="198" fill="#8790a0" font-size="11" font-weight="400">IK + collision-free</text><text x="828" y="214" fill="#8790a0" font-size="11" font-weight="400">arm trajectories</text></g>
+              <g><rect x="812" y="270" width="176" height="56" rx="10" fill="#14171e" stroke="#353c4a" stroke-width="1.5"/><text x="828" y="294" fill="#eef0f4">so101_driver</text><text x="828" y="312" fill="#8790a0" font-size="11" font-weight="400">ros2_control / LeRobot</text></g>
+            </g>
+            <!-- hardware -->
+            <g font-size="14" font-weight="700">
+              <g><rect x="540" y="380" width="200" height="56" rx="10" fill="#1b1f28" stroke="#262b36"/><text x="556" y="404" fill="#eef0f4">TurtleBot3 base</text><text x="556" y="422" fill="#8790a0" font-size="11" font-weight="400">OpenCR + Dynamixel wheels</text></g>
+              <g><rect x="812" y="380" width="176" height="56" rx="10" fill="#1b1f28" stroke="#262b36"/><text x="828" y="404" fill="#eef0f4">SO-101 arm</text><text x="828" y="422" fill="#8790a0" font-size="11" font-weight="400">6 × STS3215 servos</text></g>
+            </g>
+          </svg>
+        </figure>
+
+        <div class="subsection grid-3">
+          <div class="card reveal"><h4>Perception</h4><p>Runs the detector on each frame, back-projects the detection to the floor, and publishes a <code>PoseStamped</code> in the <code>map</code> frame.</p></div>
+          <div class="card reveal"><h4>Mission state machine</h4><p>The only node that knows the task. It calls Nav2 and MoveIt through actions, so every step can be cancelled, timed out and retried.</p></div>
+          <div class="card reveal"><h4>Hardware-agnostic</h4><p>Every node talks through standard ROS 2 interfaces, so we can swap the real robot for a Gazebo simulation or bag playback when we're away from the lab.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= STATE MACHINE ================= -->
+    <section id="state-machine">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Behavior</span>
+          <h2>Mission state machine</h2>
+          <p>Click a state to see what it does and where it goes on success or failure. <span class="todo">Confirm states against the final mission_fsm</span></p>
+        </div>
+        <div class="reveal" data-tabs>
+          <div class="tabs fsm" role="tablist" aria-label="Mission states">
+            <button class="tab" role="tab" id="t-search" aria-controls="p-search" aria-selected="true">SEARCH</button>
+            <button class="tab" role="tab" id="t-detect" aria-controls="p-detect">DETECT</button>
+            <button class="tab" role="tab" id="t-nav" aria-controls="p-nav">NAVIGATE</button>
+            <button class="tab" role="tab" id="t-align" aria-controls="p-align">ALIGN</button>
+            <button class="tab" role="tab" id="t-grasp" aria-controls="p-grasp">GRASP</button>
+            <button class="tab" role="tab" id="t-verify" aria-controls="p-verify">VERIFY</button>
+            <button class="tab" role="tab" id="t-deliver" aria-controls="p-deliver">DELIVER</button>
+            <button class="tab" role="tab" id="t-release" aria-controls="p-release">RELEASE</button>
+          </div>
+          <div class="tab-panel" role="tabpanel" id="p-search" aria-labelledby="t-search">
+            <h3>Search</h3><p>Rotate in place (and later, visit waypoints) until the detector reports the target with enough confidence.</p>
+            <dl><dt>success</dt><dd>Target seen for N consecutive frames → DETECT</dd><dt>failure</dt><dd>Full rotation with no detection → move to next waypoint (reach goal) or abort</dd><dt>uses</dt><dd><code>/cmd_vel</code>, <code>/detections</code></dd></dl>
+          </div>
+          <div class="tab-panel" role="tabpanel" id="p-detect" aria-labelledby="t-detect" hidden>
+            <h3>Detect &amp; localize</h3><p>Average several floor-position estimates to reduce noise, then transform into the <code>map</code> frame.</p>
+            <dl><dt>success</dt><dd>Stable estimate (spread &lt; threshold) → NAVIGATE</dd><dt>failure</dt><dd>Estimate jumps around → back to SEARCH</dd><dt>uses</dt><dd><code>/target_pose</code>, TF</dd></dl>
+          </div>
+          <div class="tab-panel" role="tabpanel" id="p-nav" aria-labelledby="t-nav" hidden>
+            <h3>Navigate</h3><p>Compute a grasp pose at standoff distance <em>d</em> from the object, facing it, and send it to Nav2.</p>
+            <dl><dt>success</dt><dd>Nav2 reports goal reached → ALIGN</dd><dt>failure</dt><dd>Planner fails / timeout → Nav2 recovery behaviors, then re-detect</dd><dt>uses</dt><dd><code>NavigateToPose</code> action</dd></dl>
+          </div>
+          <div class="tab-panel" role="tabpanel" id="p-align" aria-labelledby="t-align" hidden>
+            <h3>Align (final approach)</h3><p>Nav2's goal tolerance is looser than the arm's reach band, so we re-detect the object up close and creep forward or rotate until it's in the sweet spot.</p>
+            <dl><dt>success</dt><dd>Object inside the reach band → GRASP</dd><dt>failure</dt><dd>Object lost → DETECT</dd><dt>uses</dt><dd><code>/cmd_vel</code>, <code>/target_pose</code></dd></dl>
+          </div>
+          <div class="tab-panel" role="tabpanel" id="p-grasp" aria-labelledby="t-grasp" hidden>
+            <h3>Grasp</h3><p>Pre-grasp above the object → descend → close gripper → lift. MoveIt plans each segment.</p>
+            <dl><dt>success</dt><dd>Trajectory finished → VERIFY</dd><dt>failure</dt><dd>IK has no solution → back up and ALIGN again</dd><dt>uses</dt><dd><code>MoveGroup</code> action, gripper controller</dd></dl>
+          </div>
+          <div class="tab-panel" role="tabpanel" id="p-verify" aria-labelledby="t-verify" hidden>
+            <h3>Verify</h3><p>Check the object is actually held: gripper joint position (didn't fully close) and/or the object is gone from the floor in the camera.</p>
+            <dl><dt>success</dt><dd>Object held → DELIVER</dd><dt>failure</dt><dd>Empty gripper → retry GRASP (max 2), then DETECT</dd><dt>uses</dt><dd><code>/joint_states</code>, <code>/detections</code></dd></dl>
+          </div>
+          <div class="tab-panel" role="tabpanel" id="p-deliver" aria-labelledby="t-deliver" hidden>
+            <h3>Deliver</h3><p>Stow the arm close to the body (keeps the center of mass inside the support polygon) and navigate to the delivery pose.</p>
+            <dl><dt>success</dt><dd>At delivery pose → RELEASE</dd><dt>failure</dt><dd>Object dropped (VERIFY check while driving) → DETECT</dd><dt>uses</dt><dd><code>NavigateToPose</code></dd></dl>
+          </div>
+          <div class="tab-panel" role="tabpanel" id="p-release" aria-labelledby="t-release" hidden>
+            <h3>Release</h3><p>Lower the object, open the gripper, retract, and report success.</p>
+            <dl><dt>success</dt><dd>Done → idle</dd><dt>failure</dt><dd><span class="todo">decide</span></dd><dt>uses</dt><dd><code>MoveGroup</code></dd></dl>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TRADE-OFFS ================= -->
+    <section id="tradeoffs">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Decisions</span>
+          <h2>Design choices &amp; trade-offs</h2>
+          <p>Each row lists the options we weighed and what we picked. Fill in the "Chosen" column as decisions land.</p>
+        </div>
+        <div class="table-wrap reveal">
+          <table>
+            <thead><tr><th>Decision</th><th>Options</th><th>Trade-off</th><th>Chosen</th></tr></thead>
+            <tbody>
+              <tr><td>Arm mount</td><td>Side / front mount · top mount</td><td>A low front mount reaches the floor easily and keeps the center of mass low, but shifts weight ahead of the wheels. A top mount clears the floor less easily and may block the LiDAR.</td><td><span class="todo">pick</span></td></tr>
+              <tr><td>Object detector</td><td>Color threshold / ArUco · YOLO-type · open-vocabulary (e.g. Grounding DINO) · VLM</td><td>Simple methods are fast and reliable but only work for one object. Open-vocabulary detectors and VLMs generalize to new objects (a reach goal) but are slower, heavier and may need offboard compute.</td><td><span class="todo">pick</span></td></tr>
+              <tr><td>Object localization</td><td>Monocular + ground plane · depth camera</td><td>The C922 has no depth. Assuming the object sits on a flat floor turns one pixel into a 3D point using only the calibration and the camera pose.</td><td>Ground plane <span class="todo">confirm</span></td></tr>
+              <tr><td>Where compute runs</td><td>Onboard (Raspberry Pi) · offboard laptop over Wi-Fi</td><td>Offboard gets a GPU for detection but adds Wi-Fi latency and dropped images. Onboard is self-contained but slow.</td><td><span class="todo">pick</span></td></tr>
+              <tr><td>Arm motion</td><td>MoveIt 2 · scripted joint poses</td><td>MoveIt handles IK and collisions for any object position. Scripted poses are simpler but only work at a fixed relative position.</td><td>MoveIt 2</td></tr>
+              <tr><td>Final approach</td><td>Nav2 only · Nav2 + visual alignment</td><td>Nav2's goal tolerance (0.25 m by default) is wider than the arm's reach band. Tightening it makes the controller oscillate, so a short camera-guided creep is more reliable (see the <a href="implementation.html#reach">reach map</a>).</td><td><span class="todo">pick</span></td></tr>
+              <tr><td>Arm power</td><td>TurtleBot battery · separate battery pack</td><td>Sharing the battery is lighter but servo current spikes can brown out the TurtleBot's computer. A separate pack is isolated but adds weight.</td><td><span class="todo">pick</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= WHY IT'S HARD ================= -->
+    <section id="hard">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Challenges</span>
+          <h2>Why this is hard</h2>
+        </div>
+        <div class="grid-2">
+          <div class="callout reveal"><h4>The arm can tip the robot</h4><p>A TurtleBot3 Burger rests on two wheels and one rear caster. Hang an arm off the front and the center of mass can slide past the wheel axle.</p></div>
+          <div class="callout reveal"><h4>Reaching the floor</h4><p>The SO-101 was designed for tabletops. From a low mount, its reachable floor area is a thin ring only a few centimeters wide.</p></div>
+          <div class="callout reveal"><h4>The arm blocks the sensors</h4><p>Any pose the arm holds while driving can show up in the LiDAR scan as an "obstacle" or cover the camera.</p></div>
+          <div class="callout reveal"><h4>Errors stack up</h4><p>Camera calibration, TF, localization and Nav2 tolerance errors all add up before the gripper closes. The grasp has to tolerate a few centimeters of slop.</p></div>
+        </div>
+
+        <div class="widget reveal" id="stability">
+          <div class="widget-head"><h4>Try it: will it tip over?</h4><span class="eyebrow">Interactive · top-down + side view</span></div>
+          <div class="widget-body">
+            <div class="widget-canvas stab-views">
+              <figure class="stab-view"><canvas id="stab-canvas" style="--ar: 1 / 1" aria-label="Top-down view of the robot's support polygon and combined center of mass"></canvas><figcaption>Top-down</figcaption></figure>
+              <figure class="stab-view"><canvas id="stab-side" style="--ar: 1 / 1" aria-label="Side view of the robot and arm with the center of mass and its plumb line; the robot leans when it tips"></canvas><figcaption>Side view</figcaption></figure>
+              <figure class="stab-view wide"><canvas id="stab-chart" style="--ar: 3 / 1" aria-label="Chart of stability margin versus arm extension, with and without a front caster"></canvas><figcaption>Margin vs. arm extension</figcaption></figure>
+            </div>
+            <div class="widget-side">
+              <div id="stab-status"></div>
+              <div class="control"><label for="stab-ext">Arm extension <output for="stab-ext"></output></label><input type="range" id="stab-ext" min="0.02" max="0.25" step="0.005" value="0.12"></div>
+              <div class="control"><label for="stab-pan">Arm pan <output for="stab-pan"></output></label><input type="range" id="stab-pan" min="-110" max="110" step="1" value="0"></div>
+              <div class="control"><label for="stab-payload">Payload <output for="stab-payload"></output></label><input type="range" id="stab-payload" min="0" max="0.3" step="0.01" value="0.05"></div>
+              <label class="check"><input type="checkbox" id="stab-caster"> Add front caster</label>
+              <dl class="readout" id="stab-readout"></dl>
+            </div>
+          </div>
+          <p class="widget-note">The robot stays upright while the combined center of mass
+            $\bar{\mathbf{p}} = \frac{\sum_i m_i \mathbf{p}_i}{\sum_i m_i}$ lies inside the support polygon of its contact points. The side view follows the plumb line from the center of mass down to the floor: once it falls outside the support span, the robot pivots on its front contact. The chart sweeps the arm's whole reach for the current pan and payload. Braking at deceleration $a$ shifts the effective center forward by $h\,a/g$, so the margin $m$ allows $a_{\max} = g\,m/h$. Masses and positions are estimates in <code>assets/js/robot-params.js</code>. <span class="todo">replace with measured values</span></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-tight"><div class="container"><nav id="pager" aria-label="Page navigation"></nav></div></section>
+  </main>
+
+  <footer id="site-footer"></footer>
+  <script src="assets/js/media.js"></script>
+  <script src="assets/js/robot-params.js"></script>
+  <script src="assets/js/site.js"></script>
+  <script src="assets/js/kinematics.js"></script>
+  <script src="assets/js/stability-demo.js"></script>
+</body>
+</html>

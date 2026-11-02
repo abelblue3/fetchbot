@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Conclusion · FetchBot</title>
+  <meta name="description" content="What FetchBot achieved against its success criteria, the challenges we hit, and future work.">
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body id="top">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header id="site-nav"></header>
+
+  <main id="main">
+    <header class="page-hero">
+      <div class="container">
+        <span class="page-num" aria-hidden="true">05</span>
+        <span class="eyebrow">05 · Conclusion</span>
+        <h1>Conclusion</h1>
+        <p class="lede"><span class="todo">One- or two-sentence verdict: did FetchBot do what we set out to do?</span></p>
+      </div>
+    </header>
+
+    <!-- ================= CRITERIA ================= -->
+    <section id="criteria">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Scorecard</span>
+          <h2>Did we meet our criteria?</h2>
+          <p>The success criteria from the <a href="design.html#goals">design</a>, next to what we measured in <a href="results.html#trials">results</a>.</p>
+        </div>
+        <div class="table-wrap reveal">
+          <table>
+            <thead><tr><th>Criterion</th><th>Target</th><th>Achieved</th><th>Met?</th></tr></thead>
+            <tbody>
+              <tr><td>End-to-end task completion</td><td><span class="todo">target</span></td><td><span class="todo">result</span></td><td><span class="todo">✓ / ✗</span></td></tr>
+              <tr><td>Grasp success after arrival</td><td><span class="todo">target</span></td><td><span class="todo">result</span></td><td><span class="todo">✓ / ✗</span></td></tr>
+              <tr><td>Object localization error</td><td><span class="todo">target</span></td><td><span class="todo">result</span></td><td><span class="todo">✓ / ✗</span></td></tr>
+              <tr><td>Starting-pose variety</td><td><span class="todo">target</span></td><td><span class="todo">result</span></td><td><span class="todo">✓ / ✗</span></td></tr>
+              <tr><td>Time per run</td><td><span class="todo">target</span></td><td><span class="todo">result</span></td><td><span class="todo">✓ / ✗</span></td></tr>
+              <tr><td>Reach goal: autonomous search</td><td>Find an object not initially in view</td><td><span class="todo">result</span></td><td><span class="todo">✓ / ✗</span></td></tr>
+              <tr><td>Reach goal: multiple object types</td><td>Retrieve more than one everyday object</td><td><span class="todo">result</span></td><td><span class="todo">✓ / ✗</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= WORKED / CHALLENGES ================= -->
+    <section id="challenges">
+      <div class="container">
+        <div class="grid-2">
+          <div class="reveal">
+            <span class="eyebrow">What worked</span>
+            <h2>Wins</h2>
+            <ul>
+              <li><span class="todo">e.g. ground-plane localization was accurate to X cm within 1 m</span></li>
+              <li><span class="todo">e.g. MoveIt config transferred from sim to the real arm unchanged</span></li>
+              <li><span class="todo">…</span></li>
+            </ul>
+          </div>
+          <div class="reveal">
+            <span class="eyebrow">What was hard</span>
+            <h2>Challenges</h2>
+            <ul>
+              <li><span class="todo">Hardware: mount stiffness, tipping, servo power</span></li>
+              <li><span class="todo">Integration: TF frames, timing, Wi-Fi latency</span></li>
+              <li><span class="todo">Lab time: sharing robots with other teams</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= FUTURE ================= -->
+    <section id="future">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Next steps</span>
+          <h2>Future work</h2>
+          <p>With more time, here's where we'd take FetchBot.</p>
+        </div>
+        <div class="grid-2">
+          <div class="card reveal"><div class="card-icon">01</div><h3>Autonomous search</h3><p>Explore the room (frontier exploration or waypoints) when the object isn't in view, instead of only rotating in place.</p></div>
+          <div class="card reveal"><div class="card-icon">02</div><h3>Everyday objects</h3><p>An open-vocabulary detector plus grasp-pose prediction to handle objects of any shape, not one distinctive object.</p></div>
+          <div class="card reveal"><div class="card-icon">03</div><h3>"Bring me the red cup"</h3><p>Natural-language requests through a vision-language model or a hierarchical VLA policy on top of the same skills.</p></div>
+          <div class="card reveal"><div class="card-icon">04</div><h3>Wrist camera &amp; visual servoing</h3><p>Close the loop on the final centimeters of the grasp instead of relying on one estimate from far away.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= LESSONS ================= -->
+    <section id="lessons">
+      <div class="container narrow">
+        <div class="reveal">
+          <span class="eyebrow">Reflection</span>
+          <h2>Lessons learned</h2>
+          <p><span class="todo">A paragraph on what we'd do differently, and what we learned about hardware/software integration</span></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-tight"><div class="container"><nav id="pager" aria-label="Page navigation"></nav></div></section>
+  </main>
+
+  <footer id="site-footer"></footer>
+  <script src="assets/js/media.js"></script>
+  <script src="assets/js/site.js"></script>
+</body>
+</html>

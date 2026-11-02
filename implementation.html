@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Implementation · FetchBot</title>
+  <meta name="description" content="Hardware, perception, navigation and manipulation for FetchBot, with the math, code and interactive demos.">
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
+</head>
+<body id="top" data-math>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header id="site-nav"></header>
+
+  <main id="main">
+    <header class="page-hero">
+      <div class="container">
+        <span class="page-num" aria-hidden="true">03</span>
+        <span class="eyebrow">03 · Implementation</span>
+        <h1>Implementation</h1>
+        <p class="lede">How we built it: the hardware, then each software stage with the math behind it, code, and demos you can play with.</p>
+        <nav class="toc" aria-label="On this page">
+          <a href="#hardware">Hardware</a><a href="#mount">Arm mount</a><a href="#bom">Bill of materials</a><a href="#software">Software</a>
+          <a href="#perception">Perception</a><a href="#navigation">Navigation</a><a href="#manipulation">Manipulation</a><a href="#reach">Reach map</a><a href="#mission">Mission control</a>
+        </nav>
+      </div>
+    </header>
+
+    <!-- ================= HARDWARE ================= -->
+    <section id="hardware">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Hardware</span>
+          <h2>The robot</h2>
+          <p>A stock TurtleBot3 base, a LeRobot SO-101 arm on a custom removable mount, and a USB camera.</p>
+        </div>
+        <div class="grid-4">
+          <div class="card reveal"><span class="eyebrow">Base</span><h4>TurtleBot3 <span class="todo">Burger/Waffle?</span></h4><p>Differential drive, 360° LiDAR, OpenCR board, onboard Raspberry Pi.</p></div>
+          <div class="card reveal"><span class="eyebrow">Arm</span><h4>LeRobot SO-101</h4><p>5 joints + gripper on Feetech STS3215 serial servos. Provided by Chase.</p></div>
+          <div class="card reveal"><span class="eyebrow">Camera</span><h4>Logitech C922</h4><p>RGB USB webcam, calibrated with the ROS <code>camera_calibration</code> checkerboard tool.</p></div>
+          <div class="card reveal"><span class="eyebrow">Compute</span><h4><span class="todo">Pi only / Pi + laptop?</span></h4><p>Where detection, Nav2 and MoveIt each run.</p></div>
+        </div>
+        <div class="subsection grid-2">
+          <figure class="reveal"><div class="placeholder ratio-4x3" data-todo="Photo: the full robot, side view, arm extended"></div></figure>
+          <figure class="reveal"><div class="placeholder ratio-4x3" data-todo="Photo: wiring and power (servo bus, battery, USB)"></div></figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= MOUNT ================= -->
+    <section id="mount">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Mechanical</span>
+          <h2>Custom arm mount</h2>
+          <p>A 3D-printed adapter attaches the SO-101 to the TurtleBot's plate holes without permanent changes. <span class="todo">Describe the final design, material, infill and fasteners</span></p>
+        </div>
+        <div class="split">
+          <div class="reveal">
+            <div class="model-wrap">
+              <model-viewer src="assets/models/mount.glb" alt="3D model of the arm mount" camera-controls auto-rotate shadow-intensity="1" exposure="1.1"></model-viewer>
+              <div class="placeholder" data-todo="Export the mount CAD as assets/models/mount.glb (drag to rotate once it's there)"></div>
+            </div>
+          </div>
+          <div class="reveal">
+            <h3>Requirements for the mount</h3>
+            <ul>
+              <li>Removable: mounts on existing TurtleBot plate holes.</li>
+              <li>Keeps the arm's full range of motion.</li>
+              <li>Doesn't block the LiDAR's field of view.</li>
+              <li>Stiff enough that the arm base doesn't wobble during grasps.</li>
+              <li>Room for a front caster or stabilizer (see the <a href="design.html#hard">tip-over demo</a>).</li>
+            </ul>
+            <p><a href="materials.html#cad">Download STL / STEP files →</a></p>
+          </div>
+        </div>
+        <div class="subsection reveal">
+          <h3>Iterations</h3>
+          <div class="grid-3">
+            <figure><div class="placeholder ratio-4x3" data-todo="Mount v1 photo / render"></div><figcaption>v1 · <span class="todo">what went wrong</span></figcaption></figure>
+            <figure><div class="placeholder ratio-4x3" data-todo="Mount v2 photo / render"></div><figcaption>v2 · <span class="todo">what changed</span></figcaption></figure>
+            <figure><div class="placeholder ratio-4x3" data-todo="Final mount photo"></div><figcaption>Final · <span class="todo">why it works</span></figcaption></figure>
+          </div>
+        </div>
+        <div class="subsection reveal" data-media="mountTest" data-caption="Range-of-motion test on the mount using the default LeRobot software."></div>
+      </div>
+    </section>
+
+    <!-- ================= BOM ================= -->
+    <section id="bom">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Parts</span>
+          <h2>Bill of materials</h2>
+        </div>
+        <div class="grid-2">
+          <div class="reveal">
+            <h4>Lab resources</h4>
+            <div class="table-wrap"><table>
+              <thead><tr><th>Item</th><th class="num">Qty</th></tr></thead>
+              <tbody><tr><td>TurtleBot3</td><td class="num">1</td></tr><tr><td>Logitech C922 RGB camera</td><td class="num">1</td></tr></tbody>
+            </table></div>
+            <h4 style="margin-top:28px">Other robotic platforms</h4>
+            <div class="table-wrap"><table>
+              <thead><tr><th>Item</th><th class="num">Qty</th><th>Owner</th></tr></thead>
+              <tbody><tr><td>LeRobot SO-101 robotic arm</td><td class="num">1</td><td>Charles Ballentine</td></tr></tbody>
+            </table></div>
+          </div>
+          <div class="reveal">
+            <h4>Other purchases</h4>
+            <div class="table-wrap"><table>
+              <thead><tr><th>Item</th><th class="num">Qty</th><th>Purpose</th></tr></thead>
+              <tbody>
+                <tr><td>3D printing filament</td><td class="num"><span class="todo">qty</span></td><td>Custom removable arm mount</td></tr>
+                <tr><td>Mounting hardware</td><td class="num"><span class="todo">qty</span></td><td>Screws, nuts, standoffs</td></tr>
+                <tr><td>Casters / stabilizers</td><td class="num"><span class="todo">qty</span></td><td>Keep the robot from tipping under the arm's weight</td></tr>
+                <tr><td>Portable power source</td><td class="num"><span class="todo">qty</span></td><td>Power the arm while driving, if needed</td></tr>
+              </tbody>
+            </table></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SOFTWARE OVERVIEW ================= -->
+    <section id="software">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Software</span>
+          <h2>ROS 2 packages</h2>
+          <p>See the <a href="design.html#architecture">architecture diagram</a> for how they connect. <span class="todo">Match to the final repo</span></p>
+        </div>
+        <div class="split">
+          <div class="table-wrap reveal"><table>
+            <thead><tr><th>Node</th><th>In</th><th>Out</th></tr></thead>
+            <tbody>
+              <tr><td><code>perception_node</code></td><td><code>/image_raw</code>, TF</td><td><code>/target_pose</code>, <code>/detections</code></td></tr>
+              <tr><td><code>mission_fsm</code></td><td><code>/target_pose</code>, <code>/joint_states</code></td><td>Nav2 + MoveIt action goals</td></tr>
+              <tr><td>Nav2 (stock)</td><td><code>/scan</code>, <code>/odom</code>, map</td><td><code>/cmd_vel</code></td></tr>
+              <tr><td>MoveIt 2 (configured)</td><td>pose goals, <code>/joint_states</code></td><td>joint trajectories</td></tr>
+              <tr><td><code>so101_driver</code></td><td>joint trajectories</td><td><code>/joint_states</code>, servo bus</td></tr>
+            </tbody>
+          </table></div>
+          <div class="code-block reveal">
+            <div class="code-head"><span>repository layout</span><a data-site="repo" href="#">GitHub →</a></div>
+<pre class="plain"><code>fetchbot_ws/src/
+├── fetchbot_bringup/     # launch files, params, maps
+├── fetchbot_perception/  # detector + pixel → floor
+├── fetchbot_mission/     # state machine
+├── so101_description/    # URDF / meshes (arm + mount)
+├── so101_moveit_config/  # MoveIt Setup Assistant output
+└── so101_driver/         # ros2_control hardware interface</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= PERCEPTION ================= -->
+    <section id="perception">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Stage 1 · Sense</span>
+          <h2>Perception: from pixels to a floor position</h2>
+          <p>The camera gives us a 2D bounding box. To drive to the object we need its 3D position in the map. The C922 has no depth sensor, so we assume the object rests on the floor plane.</p>
+        </div>
+
+        <div class="split">
+          <div class="reveal">
+            <h3>1 · Detection</h3>
+            <p>We take the <strong>bottom-center</strong> of the bounding box as the pixel where the object touches the floor. <span class="todo">Which detector and why</span></p>
+            <div class="table-wrap"><table>
+              <thead><tr><th>Detector</th><th class="num">FPS</th><th class="num">Precision</th><th>Notes</th></tr></thead>
+              <tbody>
+                <tr><td>Color threshold</td><td class="num"><span class="todo">–</span></td><td class="num"><span class="todo">–</span></td><td>Baseline</td></tr>
+                <tr><td>YOLO <span class="todo">version</span></td><td class="num"><span class="todo">–</span></td><td class="num"><span class="todo">–</span></td><td></td></tr>
+                <tr><td>Open-vocab <span class="todo">model</span></td><td class="num"><span class="todo">–</span></td><td class="num"><span class="todo">–</span></td><td>Text prompt</td></tr>
+              </tbody>
+            </table></div>
+          </div>
+          <div class="reveal">
+            <h3>2 · Camera model</h3>
+            <p>The pinhole model maps a 3D point to a pixel through the intrinsics $K$ (from calibration) and the camera pose $[R\,|\,t]$:</p>
+            <div class="math-block">$$\lambda\begin{bmatrix}u\\v\\1\end{bmatrix} = K\begin{bmatrix}R & t\end{bmatrix}\begin{bmatrix}X\\Y\\Z\\1\end{bmatrix},\qquad K = \begin{bmatrix}f_x & 0 & c_x\\ 0 & f_y & c_y\\ 0&0&1\end{bmatrix}$$</div>
+            <p class="muted">Calibrated $K$: <span class="todo">paste values from camera_calibration</span></p>
+          </div>
+        </div>
+
+        <div class="subsection reveal">
+          <h3>3 · Back-project and intersect the floor</h3>
+          <p>Inverting the projection gives a <em>ray</em>, not a point. We rotate it into the robot frame with the camera's mounted pose $g_{bc} = (R_{bc}, \mathbf{o}_b)$ and intersect it with the floor $z = 0$:</p>
+          <div class="math-block">$$\mathbf{d}_c = K^{-1}\begin{bmatrix}u\\v\\1\end{bmatrix},\qquad \mathbf{d}_b = R_{bc}\,\mathbf{d}_c,\qquad \mathbf{p}(s) = \mathbf{o}_b + s\,\mathbf{d}_b$$
+          $$p_z(s^\ast) = 0 \;\Rightarrow\; s^\ast = -\frac{o_z}{d_z}\quad(d_z < 0),\qquad \mathbf{p}_{\text{map}} = g_{\text{map},b}\;\mathbf{p}(s^\ast)$$</div>
+          <p>The last step uses the TF chain <code>camera_link → base_link → odom → map</code>, which AMCL keeps up to date.</p>
+          <div class="callout"><p><strong>Error grows with distance squared.</strong> For a camera at height $h$ seeing a point at range $r$, a pixel error $\Delta v$ becomes a range error of about $\Delta r \approx \dfrac{h^2 + r^2}{h}\cdot\dfrac{\Delta v}{f_y}$. That's why we re-detect up close before grasping. Try it below: click near the horizon and watch the "1 px error" readout.</p></div>
+        </div>
+
+        <div class="widget reveal" id="camera-demo">
+          <div class="widget-head"><h4>Try it: pixel → floor</h4><span class="eyebrow">Interactive · click the camera image</span></div>
+          <div class="widget-body">
+            <div class="widget-canvas cam-views">
+              <canvas id="cam-side" style="--ar: 3 / 1" aria-label="Side view of the camera's field of view and the selected ray hitting the floor"></canvas>
+              <div><canvas id="cam-image" style="--ar: 4 / 3" tabindex="0" aria-label="Simulated camera image. Click or use arrow keys to choose a pixel."></canvas></div>
+            </div>
+            <div class="widget-side">
+              <div id="cam-status"></div>
+              <div class="control"><label for="cam-h">Camera height <output for="cam-h"></output></label><input type="range" id="cam-h" min="0.1" max="0.45" step="0.01" value="0.2"></div>
+              <div class="control"><label for="cam-tilt">Tilt down <output for="cam-tilt"></output></label><input type="range" id="cam-tilt" min="0" max="70" step="1" value="30"></div>
+              <dl class="readout" id="cam-readout"></dl>
+            </div>
+          </div>
+          <p class="widget-note">The cyan grid is the floor projected into the image, in 25 cm steps. Intrinsics come from the C922's nominal field of view. <span class="todo">swap in our calibrated K</span></p>
+        </div>
+
+        <div class="code-block reveal">
+          <div class="code-head"><span>fetchbot_perception/perception_node.py · illustrative sketch</span><a data-site="repo" href="#">full source →</a></div>
+<pre><code class="language-python"># TODO: replace with our real code
+def image_callback(self, msg):
+    frame = self.bridge.imgmsg_to_cv2(msg, "bgr8")
+    box = self.detector(frame)                    # our detector
+    if box is None:
+        return
+    u, v = box.bottom_center()                    # floor contact pixel
+    d_cam = self.K_inv @ np.array([u, v, 1.0])    # ray in camera frame
+
+    tf = self.tf_buffer.lookup_transform("base_link", msg.header.frame_id, Time())
+    o, R = to_origin_and_rotation(tf)
+    d = R @ d_cam
+    if d[2] >= 0:                                 # ray points above the horizon
+        return
+    p_base = o + (-o[2] / d[2]) * d               # intersect z = 0
+    self.publish_target(p_base, frame_id="base_link")</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= NAVIGATION ================= -->
+    <section id="navigation">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Stage 2 · Plan</span>
+          <h2>Navigation: getting within arm's reach</h2>
+          <p>We map the lab once with <span class="todo">slam_toolbox / Cartographer</span>, then localize with AMCL and plan with Nav2. Our job is choosing <em>where</em> to stop.</p>
+        </div>
+        <div class="split">
+          <div class="reveal">
+            <h3>Approach pose</h3>
+            <p>Stop at a standoff distance $d^\ast$ from the object, along the line from the robot to it, facing the object:</p>
+            <div class="math-block">$$\hat{\mathbf{u}} = \frac{\mathbf{p}_o - \mathbf{p}_r}{\lVert \mathbf{p}_o - \mathbf{p}_r\rVert},\qquad \mathbf{p}_g = \mathbf{p}_o - d^\ast\,\hat{\mathbf{u}},\qquad \psi_g = \operatorname{atan2}(\hat u_y, \hat u_x)$$</div>
+            <p>Nav2 takes orientation as a quaternion: $q = \big(0,\,0,\,\sin\tfrac{\psi_g}{2},\,\cos\tfrac{\psi_g}{2}\big)$. The best $d^\ast$ puts the object in the middle of the arm's reachable floor band (see the <a href="#reach">reach map</a>).</p>
+          </div>
+          <div class="reveal">
+            <figure><div class="placeholder ratio-4x3" data-todo="Screenshot: SLAM map of the lab with the costmap and a planned path"></div></figure>
+          </div>
+        </div>
+        <div class="code-block reveal">
+          <div class="code-head"><span>fetchbot_mission/approach.py · illustrative sketch</span><a data-site="repo" href="#">full source →</a></div>
+<pre><code class="language-python"># TODO: replace with our real code
+from nav2_simple_commander.robot_navigator import BasicNavigator, TaskResult
+
+def approach_pose(p_obj, p_robot, d_star):
+    u = (p_obj - p_robot) / np.linalg.norm(p_obj - p_robot)
+    goal = p_obj - d_star * u
+    yaw = math.atan2(u[1], u[0])
+    return make_pose_stamped("map", goal, yaw)   # sets q = (0, 0, sin(yaw/2), cos(yaw/2))
+
+nav = BasicNavigator()
+nav.goToPose(approach_pose(p_obj, p_robot, D_STAR))
+while not nav.isTaskComplete():
+    feedback = nav.getFeedback()
+if nav.getResult() != TaskResult.SUCCEEDED:
+    ...  # recovery: re-detect and retry</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= MANIPULATION ================= -->
+    <section id="manipulation">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Stage 3 · Act</span>
+          <h2>Manipulation: kinematics of the SO-101</h2>
+          <p>MoveIt 2 does the full 5-DOF inverse kinematics and collision checking from our URDF. The math below is the model it works from, plus a planar version that shows how floor grasps work.</p>
+        </div>
+
+        <div class="split">
+          <div class="reveal">
+            <h3>Forward kinematics (product of exponentials)</h3>
+            <p>With joint twists $\xi_i$ expressed in the base frame at the zero configuration:</p>
+            <div class="math-block">$$g_{st}(\theta) = e^{\hat{\xi}_1\theta_1}\,e^{\hat{\xi}_2\theta_2}\,e^{\hat{\xi}_3\theta_3}\,e^{\hat{\xi}_4\theta_4}\,e^{\hat{\xi}_5\theta_5}\;g_{st}(0),\qquad \xi_i = \begin{bmatrix}-\omega_i\times q_i\\ \omega_i\end{bmatrix}$$</div>
+          </div>
+          <div class="table-wrap reveal"><table>
+            <thead><tr><th>Joint</th><th>$\omega_i$</th><th>$q_i$</th></tr></thead>
+            <tbody>
+              <tr><td>1 shoulder pan</td><td>$(0,0,1)$</td><td><span class="todo">from URDF</span></td></tr>
+              <tr><td>2 shoulder lift</td><td><span class="todo">axis</span></td><td><span class="todo">point</span></td></tr>
+              <tr><td>3 elbow flex</td><td><span class="todo">axis</span></td><td><span class="todo">point</span></td></tr>
+              <tr><td>4 wrist flex</td><td><span class="todo">axis</span></td><td><span class="todo">point</span></td></tr>
+              <tr><td>5 wrist roll</td><td><span class="todo">axis</span></td><td><span class="todo">point</span></td></tr>
+            </tbody>
+          </table></div>
+        </div>
+
+        <div class="subsection reveal">
+          <h3>Inverse kinematics for a top-down floor grasp</h3>
+          <p>Pan to face the object, $\theta_0 = \operatorname{atan2}(y, x)$. Pointing the gripper straight down fixes the wrist $L_3$ above the object, which leaves a 2-link problem in the arm's plane for the wrist point $(r, z)$:</p>
+          <div class="math-block">$$\cos\theta_2 = \frac{r^2 + z^2 - L_1^2 - L_2^2}{2L_1L_2},\qquad \theta_1 = \operatorname{atan2}(z, r) - \operatorname{atan2}\!\big(L_2\sin\theta_2,\; L_1 + L_2\cos\theta_2\big)$$
+          $$\theta_3 = -\tfrac{\pi}{2} - \theta_1 - \theta_2 \quad\text{(keeps the gripper vertical)}$$</div>
+          <p>A solution exists only when $|L_1 - L_2| \le \sqrt{r^2+z^2} \le L_1 + L_2$. Of the two solutions ($\pm\theta_2$) we use elbow-up, which keeps the forearm clear of the floor.</p>
+        </div>
+
+        <div class="widget reveal" id="ik-demo">
+          <div class="widget-head"><h4>Try it: floor-grasp IK</h4><span class="eyebrow">Interactive · drag the target</span></div>
+          <div class="widget-body">
+            <div class="widget-canvas"><canvas id="ik-canvas" style="--ar: 16 / 10" tabindex="0" aria-label="Side view of the arm. Drag or use arrow keys to move the grasp target."></canvas></div>
+            <div class="widget-side">
+              <div id="ik-status"></div>
+              <dl class="readout" id="ik-readout"></dl>
+              <label class="check"><input type="checkbox" id="ik-elbow"> Elbow-down solution</label>
+            </div>
+          </div>
+          <p class="widget-note">Link lengths L₁, L₂, L₃ and the shoulder height are estimates in <code>assets/js/robot-params.js</code>. The lime strip on the floor is where a vertical grasp is possible. <span class="todo">measure our arm</span></p>
+        </div>
+
+        <div class="subsection" id="reach">
+          <div class="reveal">
+            <h3>Reach map: where Nav2 needs to stop</h3>
+            <p>Sweeping the IK solution around the pan joint gives the robot's reachable floor region: a ring from $r_{\min}$ to $r_{\max} = \sqrt{(L_1 + L_2)^2 - (L_3 - z_s)^2}$ around the shoulder. Nav2 only gets the robot within its goal tolerance, so the whole tolerance disc has to fit inside that ring.</p>
+          </div>
+          <div class="widget reveal">
+            <div class="widget-head"><h4>Try it: standoff distance vs. Nav2 tolerance</h4><span class="eyebrow">Interactive · top-down view</span></div>
+            <div class="widget-body">
+              <div class="widget-canvas"><canvas id="reach-canvas" style="--ar: 4 / 3" aria-label="Top-down view of the robot with its reachable floor region and the object's tolerance disc"></canvas></div>
+              <div class="widget-side">
+                <div id="reach-status"></div>
+                <div class="control"><label for="reach-d">Standoff d <output for="reach-d"></output></label><input type="range" id="reach-d" min="0.05" max="0.5" step="0.005"></div>
+                <div class="control"><label for="reach-tol">Nav2 xy tolerance <output for="reach-tol"></output></label><input type="range" id="reach-tol" min="0" max="0.25" step="0.005"></div>
+                <dl class="readout" id="reach-readout"></dl>
+              </div>
+            </div>
+            <p class="widget-note">Drag the tolerance to Nav2's default (25 cm) and the object falls out of reach most of the time. That's why we added the ALIGN state.</p>
+          </div>
+        </div>
+
+        <div class="subsection grid-2">
+          <div class="reveal">
+            <h3>Grasp sequence</h3>
+            <ol>
+              <li><strong>Pre-grasp</strong>: 8 cm above the object, gripper open, vertical.</li>
+              <li><strong>Descend</strong>: straight down (Cartesian path) to grasp height.</li>
+              <li><strong>Close</strong>: gripper to target effort, not position, so it doesn't crush.</li>
+              <li><strong>Lift</strong> and <strong>stow</strong> close to the body for driving.</li>
+            </ol>
+            <p class="muted"><span class="todo">Real numbers + MoveIt setup notes (URDF source, SRDF groups, planner used)</span></p>
+          </div>
+          <div class="code-block reveal">
+            <div class="code-head"><span>fetchbot_mission/grasp.py · illustrative sketch</span><a data-site="repo" href="#">full source →</a></div>
+<pre><code class="language-python"># TODO: replace with our real code
+from moveit.planning import MoveItPy
+
+robot = MoveItPy(node_name="fetchbot_grasp")
+arm = robot.get_planning_component("arm")
+
+def move_to(pose):
+    arm.set_start_state_to_current_state()
+    arm.set_goal_state(pose_stamped_msg=pose, pose_link="gripper_link")
+    plan = arm.plan()
+    if not plan:
+        raise GraspError("no IK / path")
+    robot.execute(plan.trajectory, controllers=[])
+
+move_to(above(obj, 0.08)); open_gripper()
+move_to(above(obj, 0.0));  close_gripper(effort=0.4)
+move_to(STOW_POSE)</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= MISSION ================= -->
+    <section id="mission">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Integration</span>
+          <h2>Mission control</h2>
+          <p>A single state machine node ties everything together. See the <a href="design.html#state-machine">interactive state diagram</a>.</p>
+        </div>
+        <div class="code-block reveal">
+          <div class="code-head"><span>fetchbot_mission/mission_fsm.py · illustrative sketch</span><a data-site="repo" href="#">full source →</a></div>
+<pre><code class="language-python"># TODO: replace with our real code
+class State(Enum):
+    SEARCH = auto(); DETECT = auto(); NAVIGATE = auto(); ALIGN = auto()
+    GRASP = auto(); VERIFY = auto(); DELIVER = auto(); RELEASE = auto(); DONE = auto()
+
+def step(self):
+    match self.state:
+        case State.SEARCH:
+            self.rotate_in_place()
+            if self.target_seen(frames=5):
+                self.state = State.DETECT
+        case State.NAVIGATE:
+            result = self.nav_to(approach_pose(self.target, self.pose(), D_STAR))
+            self.state = State.ALIGN if result.ok else State.DETECT
+        case State.VERIFY:
+            if self.holding_object():
+                self.state = State.DELIVER
+            else:
+                self.retries += 1
+                self.state = State.GRASP if self.retries &lt; 2 else State.DETECT
+        # ...</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-tight"><div class="container"><nav id="pager" aria-label="Page navigation"></nav></div></section>
+  </main>
+
+  <footer id="site-footer"></footer>
+  <script src="assets/js/media.js"></script>
+  <script src="assets/js/robot-params.js"></script>
+  <script src="assets/js/site.js"></script>
+  <script src="assets/js/kinematics.js"></script>
+  <script src="assets/js/camera-demo.js"></script>
+  <script src="assets/js/ik-demo.js"></script>
+  <script src="assets/js/reach-demo.js"></script>
+</body>
+</html>

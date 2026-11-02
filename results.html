@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Results · FetchBot</title>
+  <meta name="description" content="Demo videos, every trial on a map, success rates by stage and failure analysis for FetchBot.">
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body id="top">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header id="site-nav"></header>
+
+  <main id="main">
+    <header class="page-hero">
+      <div class="container">
+        <span class="page-num" aria-hidden="true">04</span>
+        <span class="eyebrow">04 · Results</span>
+        <h1>Results</h1>
+        <p class="lede">Does it work? Every trial we ran, where it succeeded, and where and why it failed.</p>
+        <nav class="toc" aria-label="On this page">
+          <a href="#demo">Demo</a><a href="#synced">Robot's-eye view</a><a href="#trials">Trials</a><a href="#videos">More videos</a><a href="#failures">Failure modes</a><a href="#accuracy">Accuracy</a>
+        </nav>
+      </div>
+    </header>
+
+    <!-- ================= DEMO ================= -->
+    <section id="demo">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Demo</span>
+          <h2>End-to-end run</h2>
+          <p><span class="todo">One-sentence summary of what the video shows: start pose, object, time</span></p>
+        </div>
+        <div class="reveal" data-media="demoMain"></div>
+      </div>
+    </section>
+
+    <!-- ================= SYNCED ================= -->
+    <section id="synced">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Robot's-eye view</span>
+          <h2>One run, three perspectives</h2>
+          <p>The outside view, what the camera and detector see, and what Nav2 is planning in RViz, all on one timeline. Jump to any stage of the state machine.</p>
+        </div>
+        <div class="reveal" id="synced-player"></div>
+      </div>
+    </section>
+
+    <!-- ================= TRIALS ================= -->
+    <section id="trials">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Quantitative</span>
+          <h2>Every trial, mapped <span class="sample-badge sample-flag" hidden>SAMPLE DATA</span></h2>
+          <p>Each dot is where the object was placed, colored by how far the run got. Squares with arrows are robot start poses. Hover or tab to a dot for details.</p>
+          <p class="sample-flag" hidden><span class="todo">These rows are fake sample data. Log real trials in assets/js/trials.js</span></p>
+        </div>
+        <div class="split">
+          <div class="reveal">
+            <div class="map-wrap" id="results-map"></div>
+            <ul class="legend" id="results-legend"></ul>
+          </div>
+          <div class="reveal">
+            <h3>Success funnel</h3>
+            <p>Share of all trials that made it through each stage.</p>
+            <div class="bars" id="stage-bars"></div>
+            <div class="callout" style="margin-top:32px"><p><span class="todo">Takeaway: which stage loses the most runs, and why</span></p></div>
+          </div>
+        </div>
+        <div class="subsection reveal">
+          <h3>Trial log</h3>
+          <div class="table-wrap">
+            <table id="trials-table">
+              <thead><tr><th class="num">#</th><th>Start (x, y, θ)</th><th>Object (x, y)</th><th>Object</th><th>Detect</th><th>Nav</th><th>Grasp</th><th>Deliver</th><th class="num">Time (s)</th><th>Notes</th></tr></thead>
+              <tbody></tbody>
+              <tfoot></tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= VIDEOS ================= -->
+    <section id="videos">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Media</span>
+          <h2>More videos</h2>
+        </div>
+        <div class="grid-2">
+          <div class="reveal" data-media="demoStartPoses"></div>
+          <div class="reveal" data-media="demoPerception"></div>
+          <div class="reveal" data-media="demoRviz"></div>
+          <div class="reveal" data-media="demoShort"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= FAILURES ================= -->
+    <section id="failures">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Failure reel</span>
+          <h2>What went wrong (and what we did about it)</h2>
+          <p>Failures teach us more than successes. Each clip comes with its root cause and the fix we tried.</p>
+        </div>
+        <div class="grid-3">
+          <article class="card reveal">
+            <div data-media="failDetect"></div>
+            <h4 style="margin-top:18px">Missed detection</h4>
+            <p><strong>Cause:</strong> <span class="todo">e.g. glare, object at frame edge</span></p>
+            <p><strong>Fix:</strong> <span class="todo">what we changed</span></p>
+          </article>
+          <article class="card reveal">
+            <div data-media="failNav"></div>
+            <h4 style="margin-top:18px">Stopped out of reach</h4>
+            <p><strong>Cause:</strong> <span class="todo">e.g. goal tolerance, localization drift</span></p>
+            <p><strong>Fix:</strong> <span class="todo">e.g. added the ALIGN state</span></p>
+          </article>
+          <article class="card reveal">
+            <div data-media="failGrasp"></div>
+            <h4 style="margin-top:18px">Missed grasp</h4>
+            <p><strong>Cause:</strong> <span class="todo">e.g. position error, gripper pushed the object</span></p>
+            <p><strong>Fix:</strong> <span class="todo">what we changed</span></p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= ACCURACY ================= -->
+    <section id="accuracy">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Perception accuracy</span>
+          <h2>How well can we localize objects?</h2>
+          <p>Estimated vs. tape-measured object positions at several distances. Theory predicts the error grows roughly with distance squared (see <a href="implementation.html#perception">perception</a>).</p>
+        </div>
+        <div class="grid-2">
+          <div class="placeholder ratio-4x3 reveal" data-todo="Plot: localization error (cm) vs. distance (m), measured vs. predicted"></div>
+          <div class="table-wrap reveal"><table>
+            <thead><tr><th class="num">Distance (m)</th><th class="num">Mean error (cm)</th><th class="num">Std (cm)</th><th class="num">N</th></tr></thead>
+            <tbody>
+              <tr><td class="num">0.5</td><td class="num"><span class="todo">–</span></td><td class="num"><span class="todo">–</span></td><td class="num"><span class="todo">–</span></td></tr>
+              <tr><td class="num">1.0</td><td class="num"><span class="todo">–</span></td><td class="num"><span class="todo">–</span></td><td class="num"><span class="todo">–</span></td></tr>
+              <tr><td class="num">1.5</td><td class="num"><span class="todo">–</span></td><td class="num"><span class="todo">–</span></td><td class="num"><span class="todo">–</span></td></tr>
+              <tr><td class="num">2.0</td><td class="num"><span class="todo">–</span></td><td class="num"><span class="todo">–</span></td><td class="num"><span class="todo">–</span></td></tr>
+            </tbody>
+          </table></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-tight"><div class="container"><nav id="pager" aria-label="Page navigation"></nav></div></section>
+  </main>
+
+  <footer id="site-footer"></footer>
+  <script src="assets/js/media.js"></script>
+  <script src="assets/js/trials.js"></script>
+  <script src="assets/js/site.js"></script>
+  <script src="assets/js/synced-video.js"></script>
+  <script src="assets/js/results-map.js"></script>
+</body>
+</html>

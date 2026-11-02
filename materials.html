@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Materials · FetchBot</title>
+  <meta name="description" content="Code, presentation slides, CAD files and references for FetchBot.">
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body id="top">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header id="site-nav"></header>
+
+  <main id="main">
+    <header class="page-hero">
+      <div class="container">
+        <span class="page-num" aria-hidden="true">08</span>
+        <span class="eyebrow">08 · Additional materials</span>
+        <h1>Materials</h1>
+        <p class="lede">Everything you need to dig in or rebuild FetchBot: code, slides, CAD and references.</p>
+        <nav class="toc" aria-label="On this page">
+          <a href="#code">Code</a><a href="#presentation">Presentation</a><a href="#cad">CAD</a><a href="#quickstart">Quickstart</a><a href="#references">References</a><a href="#cite">Cite</a>
+        </nav>
+      </div>
+    </header>
+
+    <!-- ================= CODE ================= -->
+    <section id="code">
+      <div class="container">
+        <div class="grid-3">
+          <a class="card card-link reveal" data-site="repo" href="#"><span class="eyebrow">Code</span><h3>GitHub repository</h3><p>ROS 2 workspace: perception, mission, MoveIt config and launch files.</p><span class="arrow">Open ↗</span></a>
+          <a class="card card-link reveal" href="#presentation"><span class="eyebrow">Slides</span><h3>Final presentation</h3><p>The deck from our final presentation, embedded below.</p><span class="arrow">View ↓</span></a>
+          <a class="card card-link reveal" href="#cad"><span class="eyebrow">Hardware</span><h3>CAD files</h3><p>STL files for printing the mount, and STEP files for editing.</p><span class="arrow">Download ↓</span></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= PRESENTATION ================= -->
+    <section id="presentation">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Presentation</span>
+          <h2>Final presentation</h2>
+        </div>
+        <!--
+          To embed Google Slides: File → Share → Publish to web → Embed → copy the src URL,
+          then replace the placeholder div below with:
+          <div class="media"><div class="media-frame">
+            <iframe src="PASTE_SRC_HERE" title="FetchBot final presentation" allowfullscreen loading="lazy"></iframe>
+          </div></div>
+        -->
+        <div class="placeholder ratio-16x9 reveal" data-todo="Embed the Google Slides deck (instructions in an HTML comment here)"></div>
+      </div>
+    </section>
+
+    <!-- ================= CAD ================= -->
+    <section id="cad">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">CAD</span>
+          <h2>Mount files</h2>
+          <p>Put files in <code>assets/cad/</code> and update the links. GitHub's limit is 100 MB per file.</p>
+        </div>
+        <div class="table-wrap reveal"><table>
+          <thead><tr><th>Part</th><th>Format</th><th>Print settings</th><th>Download</th></tr></thead>
+          <tbody>
+            <tr><td>Arm mount adapter</td><td>STL · STEP</td><td><span class="todo">material, infill, supports</span></td><td><span class="todo">assets/cad/mount.stl</span></td></tr>
+            <tr><td>Caster bracket</td><td>STL · STEP</td><td><span class="todo">settings</span></td><td><span class="todo">assets/cad/caster.stl</span></td></tr>
+            <tr><td>Camera mount</td><td>STL · STEP</td><td><span class="todo">settings</span></td><td><span class="todo">assets/cad/camera.stl</span></td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- ================= QUICKSTART ================= -->
+    <section id="quickstart">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Reproduce it</span>
+          <h2>Quickstart</h2>
+          <p><span class="todo">Replace with the real commands once the repo is final</span></p>
+        </div>
+        <div class="code-block reveal">
+          <div class="code-head"><span>bash</span></div>
+<pre><code class="language-bash"># 1. Build the workspace (ROS 2 Humble)
+mkdir -p ~/fetchbot_ws/src && cd ~/fetchbot_ws/src
+git clone REPO_URL .
+cd .. && rosdep install --from-paths src -y --ignore-src
+colcon build --symlink-install && source install/setup.bash
+
+# 2. On the robot: base, LiDAR, camera and arm driver
+ros2 launch fetchbot_bringup robot.launch.py
+
+# 3. On the laptop: localization, Nav2, MoveIt, perception and mission
+ros2 launch fetchbot_bringup fetch.launch.py map:=maps/lab.yaml</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= REFERENCES ================= -->
+    <section id="references">
+      <div class="container narrow">
+        <div class="section-head reveal">
+          <span class="eyebrow">References</span>
+          <h2>References &amp; resources</h2>
+        </div>
+        <ol class="reveal">
+          <li>R. M. Murray, Z. Li, S. S. Sastry. <em>A Mathematical Introduction to Robotic Manipulation.</em> CRC Press, 1994. (Product-of-exponentials kinematics.)</li>
+          <li>S. Macenski, F. Martín, R. White, J. Clavero. "The Marathon 2: A Navigation System." IROS 2020. · <a href="https://docs.nav2.org/">Nav2 documentation</a></li>
+          <li>S. Macenski, T. Foote, B. Gerkey, C. Lalancette, W. Woodall. "Robot Operating System 2: Design, architecture, and uses in the wild." <em>Science Robotics</em>, 2022.</li>
+          <li><a href="https://moveit.picknik.ai/">MoveIt 2 documentation</a></li>
+          <li><a href="https://emanual.robotis.com/docs/en/platform/turtlebot3/overview/">ROBOTIS TurtleBot3 e-Manual</a></li>
+          <li><a href="https://github.com/TheRobotStudio/SO-ARM100">SO-ARM100 / SO-101 hardware</a> · <a href="https://huggingface.co/docs/lerobot/so101">LeRobot SO-101 guide</a></li>
+          <li><span class="todo">Object detector paper / repo we used</span></li>
+        </ol>
+        <p class="muted" style="margin-top:28px">Built with <a href="https://katex.org/">KaTeX</a>, <a href="https://prismjs.com/">Prism</a> and <a href="https://modelviewer.dev/">model-viewer</a>. Placeholder videos are courtesy of past EECS 106A teams <a href="https://carrombot.github.io/">CarromBot</a> and <a href="https://joshuarmata.github.io/_knotbot/">KnotBot</a>, and will be replaced with our own footage.</p>
+      </div>
+    </section>
+
+    <!-- ================= CITE ================= -->
+    <section id="cite">
+      <div class="container narrow">
+        <div class="section-head reveal">
+          <span class="eyebrow">Cite</span>
+          <h2>BibTeX</h2>
+        </div>
+        <div class="code-block reveal">
+<pre class="plain"><code>@misc{fetchbot2026,
+  title  = {FetchBot: Autonomous Mobile Manipulation with a TurtleBot3 and SO-101 Arm},
+  author = {Cisneros, Abel and Ballentine, Charles and Li, Gloria and Won, Corey},
+  year   = {2026},
+  note   = {EECS C106A Final Project, UC Berkeley},
+  url    = {TODO: site URL}
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-tight"><div class="container"><nav id="pager" aria-label="Page navigation"></nav></div></section>
+  </main>
+
+  <footer id="site-footer"></footer>
+  <script src="assets/js/media.js"></script>
+  <script src="assets/js/site.js"></script>
+</body>
+</html>
