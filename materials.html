@@ -88,7 +88,7 @@
           <div class="code-head"><span>bash</span></div>
 <pre><code class="language-bash"># 1. Build the workspace (ROS 2 Humble)
 mkdir -p ~/fetchbot_ws/src && cd ~/fetchbot_ws/src
-git clone REPO_URL .
+git clone https://github.com/abelblue3/fetchbot.git .
 cd .. && rosdep install --from-paths src -y --ignore-src
 colcon build --symlink-install && source install/setup.bash
 

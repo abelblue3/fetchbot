@@ -6,7 +6,7 @@ document.documentElement.classList.add("js");
 const SITE = {
   name: "FetchBot", // TODO: final project name
   course: "EECS C106A / 206A · Fall 2026",
-  repo: "#", // TODO: GitHub repo URL
+  repo: "https://github.com/abelblue3/fetchbot",
   slides: "materials.html#presentation",
   team: ["Abel Cisneros", "Charles (Chase) Ballentine", "Gloria Li", "Corey Won"],
 };
